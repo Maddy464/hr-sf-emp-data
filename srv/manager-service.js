@@ -60,7 +60,7 @@ module.exports = class ManagerService extends cds.ApplicationService {
       if (req.errors?.length) return;
 
       const now  = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
 
       await UPDATE(TeamRequests).set({
         status:          Status.Approved,
@@ -107,7 +107,7 @@ module.exports = class ManagerService extends cds.ApplicationService {
       if (req.errors?.length) return;
 
       const now  = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
 
       await UPDATE(TeamRequests).set({
         status:          Status.Rejected,
@@ -155,7 +155,7 @@ module.exports = class ManagerService extends cds.ApplicationService {
       if (req.errors?.length) return;
 
       const now  = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
 
       await UPDATE(TeamRequests).set({
         status:             Status.Cancelled,
@@ -193,6 +193,10 @@ module.exports = class ManagerService extends cds.ApplicationService {
 // Private helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
+// HANA's hdb driver returns Decimal columns as strings (e.g. "5.00"), not numbers.
+// Always convert through _num() before arithmetic to avoid "Wrong input for DECIMAL type".
+const _num = v => parseFloat(v) || 0;
+
 // Verify the logged-in user is the designated approving manager for this request.
 async function _assertIsDesignatedManager(req, Employees, requestManagerEmployeeId) {
   if (!requestManagerEmployeeId) {
@@ -219,10 +223,10 @@ async function _shiftBalance(db, employeeId, leaveTypeCode, year, { pendingDelta
   );
   if (!bal) return;
 
-  const newPending   = Math.max((bal.pending   ?? 0) + pendingDelta, 0);
-  const newUsed      = Math.max((bal.used      ?? 0) + usedDelta,    0);
+  const newPending   = Math.max(_num(bal.pending)   + pendingDelta, 0);
+  const newUsed      = Math.max(_num(bal.used)      + usedDelta,    0);
   const newRemaining = Math.max(
-    (bal.allocated ?? 0) + (bal.carryForward ?? 0) - newUsed - newPending,
+    _num(bal.allocated) + _num(bal.carryForward) - newUsed - newPending,
     0
   );
 

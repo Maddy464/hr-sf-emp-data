@@ -1,0 +1,54 @@
+{
+  "xsappname": "hr-sf-emp-data-42d53696trial-dev",
+  "tenant-mode": "dedicated",
+  "description": "HR Leave Request Application",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.Employee",
+      "description": "Employee: create and manage own leave requests"
+    },
+    {
+      "name": "$XSAPPNAME.Manager",
+      "description": "Manager: approve/reject team leave requests"
+    },
+    {
+      "name": "$XSAPPNAME.HRAdmin",
+      "description": "HR Admin: full access, balance allocation"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "Employee",
+      "description": "Leave request employee role",
+      "scope-references": [ "$XSAPPNAME.Employee" ]
+    },
+    {
+      "name": "Manager",
+      "description": "Leave request manager role",
+      "scope-references": [ "$XSAPPNAME.Manager" ]
+    },
+    {
+      "name": "HRAdmin",
+      "description": "HR administrator role",
+      "scope-references": [ "$XSAPPNAME.HRAdmin" ]
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "HR_Employee",
+      "description": "Assigned to all employees who submit leave requests",
+      "role-template-references": [ "$XSAPPNAME.Employee" ]
+    },
+    {
+      "name": "HR_Manager",
+      "description": "Assigned to managers who approve leave requests",
+      "role-template-references": [ "$XSAPPNAME.Manager" ]
+    },
+    {
+      "name": "HR_Admin",
+      "description": "Assigned to HR administrators",
+      "role-template-references": [ "$XSAPPNAME.HRAdmin" ]
+    }
+  ]
+}

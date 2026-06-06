@@ -88,6 +88,15 @@
               "attr": {
                 "employeeId": "EMP006"
               }
+            },
+            "mahesh.mob99@gmail.com": {
+              "password": "mahesh",
+              "roles": [
+                "Employee"
+              ],
+              "attr": {
+                "employeeId": "EMP007"
+              }
             }
           }
         }
@@ -97,12 +106,13 @@
         "auth": {
           "kind": "mocked",
           "users": {
-            "alice.johnson": { "password": "alice", "roles": ["HRAdmin"] },
-            "bob.smith":     { "password": "bob",   "roles": ["Manager"] },
-            "carol.white":   { "password": "carol", "roles": ["Manager"] },
-            "david.brown":   { "password": "david", "roles": ["Employee"] },
-            "emma.davis":    { "password": "emma",  "roles": ["Employee"] },
-            "frank.miller":  { "password": "frank", "roles": ["Employee"] }
+            "alice.johnson":       { "password": "alice",  "roles": ["HRAdmin"] },
+            "bob.smith":           { "password": "bob",    "roles": ["Manager"] },
+            "carol.white":         { "password": "carol",  "roles": ["Manager"] },
+            "david.brown":         { "password": "david",  "roles": ["Employee"] },
+            "emma.davis":          { "password": "emma",   "roles": ["Employee"] },
+            "frank.miller":        { "password": "frank",  "roles": ["Employee"] },
+            "mahesh.mob99@gmail.com": { "password": "mahesh", "roles": ["Employee"] }
           }
         }
       },

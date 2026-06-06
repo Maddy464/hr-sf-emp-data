@@ -105,8 +105,8 @@ module.exports = class LeaveService extends cds.ApplicationService {
       _validateDates(req, request.startDate, request.endDate);
       if (req.errors?.length) return;
 
-      const days = request.numberOfDays
-        ?? _calcWorkingDays(request.startDate, request.endDate,
+      const days = _num(request.numberOfDays)
+        || _calcWorkingDays(request.startDate, request.endDate,
                             request.halfDayStart, request.halfDayEnd);
 
       // Balance check
@@ -164,7 +164,7 @@ module.exports = class LeaveService extends cds.ApplicationService {
       if (req.errors?.length) return;
 
       const now = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
 
       await UPDATE(LeaveRequests).set({
         status:         Status.Approved,
@@ -213,7 +213,7 @@ module.exports = class LeaveService extends cds.ApplicationService {
       if (req.errors?.length) return;
 
       const now = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
 
       await UPDATE(LeaveRequests).set({
         status:          Status.Rejected,
@@ -259,7 +259,7 @@ module.exports = class LeaveService extends cds.ApplicationService {
           `Only Draft or Pending requests can be cancelled (current: ${request.status})`);
 
       const now = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
 
       await UPDATE(LeaveRequests).set({
         status:             Status.Cancelled,
@@ -306,7 +306,7 @@ module.exports = class LeaveService extends cds.ApplicationService {
           `Only Approved requests can be withdrawn (current: ${request.status})`);
 
       const now = new Date().toISOString();
-      const days = request.numberOfDays ?? 0;
+      const days = _num(request.numberOfDays);
       const year  = new Date(request.startDate).getFullYear();
 
       await UPDATE(LeaveRequests).set({
@@ -345,7 +345,7 @@ module.exports = class LeaveService extends cds.ApplicationService {
       const balance = await _getBalance(
         LeaveBalances, employeeId, leaveTypeCode, year
       );
-      const available = balance?.remaining ?? 0;
+      const available = _num(balance?.remaining);
 
       return {
         available,
@@ -509,7 +509,7 @@ module.exports.HRAdminService = class HRAdminService extends cds.ApplicationServ
       const maxCarry = leaveType.carryForwardDays ?? 0;
 
       for (const bal of fromBalances) {
-        const carryAmount = Math.min(bal.remaining ?? 0, maxCarry);
+        const carryAmount = Math.min(_num(bal.remaining), maxCarry);
         if (carryAmount <= 0) continue;
 
         const toBalance = await SELECT.one.from(LeaveBalances).where({
@@ -520,7 +520,7 @@ module.exports.HRAdminService = class HRAdminService extends cds.ApplicationServ
 
         if (toBalance) {
           await UPDATE(LeaveBalances)
-            .set({ carryForward: toBalance.carryForward + carryAmount })
+            .set({ carryForward: _num(toBalance.carryForward) + carryAmount })
             .where({ ID: toBalance.ID });
           await _refreshRemaining(
             LeaveBalances, bal.employee_employeeId, leaveTypeCode, toYear
@@ -555,6 +555,11 @@ module.exports.HRAdminService = class HRAdminService extends cds.ApplicationServ
 // ─────────────────────────────────────────────────────────────────────────────
 // Private helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+// HANA's hdb driver returns Decimal columns as strings (e.g. "5.00"), not numbers.
+// Plain JS arithmetic on strings produces string concatenation instead of addition.
+// Always convert through _num() before arithmetic to avoid "Wrong input for DECIMAL type".
+const _num = v => parseFloat(v) || 0;
 
 function _validateDates(req, startDate, endDate) {
   const start = new Date(startDate);
@@ -592,10 +597,10 @@ async function _updatePending(LeaveBalances, employeeId, leaveTypeCode, year, da
   const bal = await _getBalance(LeaveBalances, employeeId, leaveTypeCode, year);
   if (!bal) return;
   const newPending = op === '+'
-    ? (bal.pending ?? 0) + days
-    : Math.max((bal.pending ?? 0) - days, 0);
+    ? _num(bal.pending) + days
+    : Math.max(_num(bal.pending) - days, 0);
   await UPDATE(LeaveBalances)
-    .set({ pending: newPending, remaining: (bal.allocated ?? 0) + (bal.carryForward ?? 0) - (bal.used ?? 0) - newPending })
+    .set({ pending: newPending, remaining: _num(bal.allocated) + _num(bal.carryForward) - _num(bal.used) - newPending })
     .where({ ID: bal.ID });
 }
 
@@ -603,8 +608,8 @@ async function _updateUsed(LeaveBalances, employeeId, leaveTypeCode, year, days,
   const bal = await _getBalance(LeaveBalances, employeeId, leaveTypeCode, year);
   if (!bal) return;
   const newUsed = op === '+'
-    ? (bal.used ?? 0) + days
-    : Math.max((bal.used ?? 0) - days, 0);
+    ? _num(bal.used) + days
+    : Math.max(_num(bal.used) - days, 0);
   await UPDATE(LeaveBalances)
     .set({ used: newUsed })
     .where({ ID: bal.ID });
@@ -613,8 +618,8 @@ async function _updateUsed(LeaveBalances, employeeId, leaveTypeCode, year, days,
 async function _refreshRemaining(LeaveBalances, employeeId, leaveTypeCode, year) {
   const bal = await _getBalance(LeaveBalances, employeeId, leaveTypeCode, year);
   if (!bal) return;
-  const remaining = (bal.allocated ?? 0) + (bal.carryForward ?? 0)
-                  - (bal.used ?? 0) - (bal.pending ?? 0);
+  const remaining = _num(bal.allocated) + _num(bal.carryForward)
+                  - _num(bal.used) - _num(bal.pending);
   await UPDATE(LeaveBalances)
     .set({ remaining: Math.max(remaining, 0) })
     .where({ ID: bal.ID });
