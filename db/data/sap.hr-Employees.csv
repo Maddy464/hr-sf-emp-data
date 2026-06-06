@@ -1,0 +1,7 @@
+employeeId,firstName,lastName,fullName,email,userId,jobTitle,department,costCenter,managerId,hireDate,isActive
+EMP001,Alice,Johnson,Alice Johnson,alice.johnson@company.com,alice.johnson,HR Director,Human Resources,CC-HR,,2018-03-01,true
+EMP002,Bob,Smith,Bob Smith,bob.smith@company.com,bob.smith,Engineering Manager,Engineering,CC-ENG,alice.johnson,2019-06-15,true
+EMP003,Carol,White,Carol White,carol.white@company.com,carol.white,HR Manager,Human Resources,CC-HR,alice.johnson,2020-01-10,true
+EMP004,David,Brown,David Brown,david.brown@company.com,david.brown,Senior Developer,Engineering,CC-ENG,bob.smith,2021-04-12,true
+EMP005,Emma,Davis,Emma Davis,emma.davis@company.com,emma.davis,Developer,Engineering,CC-ENG,bob.smith,2022-07-01,true
+EMP006,Frank,Miller,Frank Miller,frank.miller@company.com,frank.miller,HR Specialist,Human Resources,CC-HR,carol.white,2023-02-20,true

@@ -1,0 +1,186 @@
+{
+  "_version": "1.85.0",
+  "sap.app": {
+    "id": "com.sap.sf.empui",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.25.0",
+      "toolsId": "51ff7991-b34b-49e3-8fb3-c03aa8816017"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/leave/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "Leave-display": {
+          "semanticObject": "Leave",
+          "action": "display",
+          "title": "{{Leave-display.flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.148.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.sap.sf.empui.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "LeaveRequestsList",
+          "target": "LeaveRequestsList"
+        },
+        {
+          "pattern": "LeaveRequests({key}):?query:",
+          "name": "LeaveRequestsObjectPage",
+          "target": "LeaveRequestsObjectPage"
+        },
+        {
+          "pattern": "LeaveRequests({key})/approvalHistory({key2}):?query:",
+          "name": "ApprovalHistoryObjectPage",
+          "target": "ApprovalHistoryObjectPage"
+        }
+      ],
+      "targets": {
+        "LeaveRequestsList": {
+          "type": "Component",
+          "id": "LeaveRequestsList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/LeaveRequests",
+              "variantManagement": "Page",
+              "navigation": {
+                "LeaveRequests": {
+                  "detail": {
+                    "route": "LeaveRequestsObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "LeaveRequestsObjectPage": {
+          "type": "Component",
+          "id": "LeaveRequestsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/LeaveRequests",
+              "navigation": {
+                "approvalHistory": {
+                  "detail": {
+                    "route": "ApprovalHistoryObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ApprovalHistoryObjectPage": {
+          "type": "Component",
+          "id": "ApprovalHistoryObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/LeaveRequests/approvalHistory"
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+  "sap.fe": {
+    "app": {
+      "enableLazyLoading": true
+    }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "emproute"
+  }
+}

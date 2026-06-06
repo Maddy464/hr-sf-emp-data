@@ -1,0 +1,121 @@
+{
+  "name": "hr-sf-emp-data",
+  "version": "1.0.0",
+  "dependencies": {
+    "@cap-js/hana": "^2",
+    "@sap/cds": "^9",
+    "@sap/xssec": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.4",
+    "@sap/cds-dk": "^9",
+    "cds-plugin-ui5": "^0.13.0",
+    "rimraf": "^5.0.5",
+    "mbt": "^1.2.49"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch:hybrid": "cds watch --profile hybrid",
+    "watch-emp_ui": "cds watch --open com.sap.sf.empui/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "undeploy": "cf undeploy hr-sf-emp-data --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "db": "hana",
+      "[development]": {
+        "db": {
+          "kind": "sqlite",
+          "credentials": {
+            "url": ":memory:"
+          }
+        },
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "alice.johnson": {
+              "password": "alice",
+              "roles": [
+                "HRAdmin"
+              ],
+              "attr": {
+                "employeeId": "EMP001"
+              }
+            },
+            "bob.smith": {
+              "password": "bob",
+              "roles": [
+                "Manager"
+              ],
+              "attr": {
+                "employeeId": "EMP002"
+              }
+            },
+            "carol.white": {
+              "password": "carol",
+              "roles": [
+                "Manager"
+              ],
+              "attr": {
+                "employeeId": "EMP003"
+              }
+            },
+            "david.brown": {
+              "password": "david",
+              "roles": [
+                "Employee"
+              ],
+              "attr": {
+                "employeeId": "EMP004"
+              }
+            },
+            "emma.davis": {
+              "password": "emma",
+              "roles": [
+                "Employee"
+              ],
+              "attr": {
+                "employeeId": "EMP005"
+              }
+            },
+            "frank.miller": {
+              "password": "frank",
+              "roles": [
+                "Employee"
+              ],
+              "attr": {
+                "employeeId": "EMP006"
+              }
+            }
+          }
+        }
+      },
+      "[hybrid]": {
+        "db": { "kind": "hana" },
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "alice.johnson": { "password": "alice", "roles": ["HRAdmin"] },
+            "bob.smith":     { "password": "bob",   "roles": ["Manager"] },
+            "carol.white":   { "password": "carol", "roles": ["Manager"] },
+            "david.brown":   { "password": "david", "roles": ["Employee"] },
+            "emma.davis":    { "password": "emma",  "roles": ["Employee"] },
+            "frank.miller":  { "password": "frank", "roles": ["Employee"] }
+          }
+        }
+      },
+      "[production]": {
+        "auth": "xsuaa"
+      },
+      "html5-repo": true
+    }
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/emp_ui"
+  ]
+}

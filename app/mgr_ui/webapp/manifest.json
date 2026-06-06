@@ -1,0 +1,186 @@
+{
+  "_version": "1.85.0",
+  "sap.app": {
+    "id": "com.sap.sf.mgrui",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:lrop",
+      "version": "1.25.0",
+      "toolsId": "51ff7991-b34b-49e3-8fb3-c03aa8816018"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/odata/v4/manager/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "TeamRequest-manage": {
+          "semanticObject": "TeamRequest",
+          "action": "manage",
+          "title": "{{TeamRequest-manage.flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.148.1",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.sap.sf.mgrui.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "@i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "uri": "i18n/i18n.properties"
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {},
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "TeamRequestsList",
+          "target": "TeamRequestsList"
+        },
+        {
+          "pattern": "TeamRequests({key}):?query:",
+          "name": "TeamRequestsObjectPage",
+          "target": "TeamRequestsObjectPage"
+        },
+        {
+          "pattern": "TeamRequests({key})/approvalHistory({key2}):?query:",
+          "name": "ApprovalHistoryObjectPage",
+          "target": "ApprovalHistoryObjectPage"
+        }
+      ],
+      "targets": {
+        "TeamRequestsList": {
+          "type": "Component",
+          "id": "TeamRequestsList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "contextPath": "/TeamRequests",
+              "variantManagement": "Page",
+              "navigation": {
+                "TeamRequests": {
+                  "detail": {
+                    "route": "TeamRequestsObjectPage"
+                  }
+                }
+              },
+              "controlConfiguration": {
+                "@com.sap.vocabularies.UI.v1.LineItem": {
+                  "tableSettings": {
+                    "type": "ResponsiveTable"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "TeamRequestsObjectPage": {
+          "type": "Component",
+          "id": "TeamRequestsObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/TeamRequests",
+              "navigation": {
+                "approvalHistory": {
+                  "detail": {
+                    "route": "ApprovalHistoryObjectPage"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "ApprovalHistoryObjectPage": {
+          "type": "Component",
+          "id": "ApprovalHistoryObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "editableHeaderContent": false,
+              "contextPath": "/TeamRequests/approvalHistory"
+            }
+          }
+        }
+      }
+    }
+  },
+  "sap.fiori": {
+    "registrationIds": [],
+    "archeType": "transactional"
+  },
+  "sap.fe": {
+    "app": {
+      "enableLazyLoading": true
+    }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "emproute"
+  }
+}

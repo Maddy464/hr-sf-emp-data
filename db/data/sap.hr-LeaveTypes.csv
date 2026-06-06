@@ -1,0 +1,7 @@
+code,name,description,unitType,isPaid,maxDaysPerYear,maxConsecutiveDays,minNoticeDays,requiresApproval,requiresAttachment,carryForwardDays,allowNegativeBalance,isActive
+ANNUAL,Annual Leave,Paid annual leave entitlement,DAYS,true,20.00,30.00,1,true,false,5.00,false,true
+SICK,Sick Leave,Paid sick leave for illness or injury,DAYS,true,10.00,14.00,0,true,false,0.00,false,true
+MATERNITY,Maternity Leave,Paid maternity leave for new mothers,DAYS,true,90.00,90.00,30,true,true,0.00,false,true
+PATERNITY,Paternity Leave,Paid paternity leave for new fathers,DAYS,true,10.00,10.00,14,true,false,0.00,false,true
+UNPAID,Unpaid Leave,Unpaid leave for personal reasons,DAYS,false,30.00,30.00,7,true,false,0.00,false,true
+BEREAVEMENT,Bereavement Leave,Paid leave for bereavement,DAYS,true,5.00,5.00,0,false,false,0.00,false,true
