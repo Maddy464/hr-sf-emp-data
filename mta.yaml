@@ -9,6 +9,8 @@ modules:
   requires:
   - name: hr-sf-emp-data-auth
   - name: hr-sf-emp-data-db
+  - name: sap_processautomation-leave
+  - name: hr-sf-emp-data-destination-service
   provides:
   - name: srv-api
     properties:
@@ -61,6 +63,7 @@ modules:
     parameters:
       service-key:
         name: hr-sf-emp-data-auth-key
+  - name: srv-api
   parameters:
     content:
       instance:
@@ -74,7 +77,14 @@ modules:
           ServiceInstanceName: hr-sf-emp-data-auth
           ServiceKeyName: hr-sf-emp-data-auth-key
           sap.cloud.service: emproute
-        existing_destinations_policy: ignore
+        - Authentication: OAuth2ClientCredentials
+          Name: hr-sf-emp-data-callback
+          Description: CAP service callback destination for SAP Workflow approval tasks
+          URL: ~{srv-api/srv-url}
+          TokenServiceInstanceName: hr-sf-emp-data-auth
+          TokenServiceKeyName: hr-sf-emp-data-auth-key
+          HTML5.DynamicDestination: true
+        existing_destinations_policy: update
   build-parameters:
     no-source: true
 - name: comsapsfempui
@@ -97,6 +107,17 @@ modules:
     - npm install
     - npm run build:cf
     supported-platforms: []
+- name: leaveApproval
+  type: com.sap.application.content
+  path: leaveApproval
+  requires:
+  - name: sap_processautomation-leave
+    parameters:
+      content-target: true
+      service-key:
+        config:
+          deployUsageScenario: workflow
+        name: spa-workflow-service-key
 resources:
 - name: hr-sf-emp-data-auth
   type: org.cloudfoundry.managed-service
@@ -148,6 +169,11 @@ resources:
     service-plan: lite
   requires:
   - name: srv-api
+- name: sap_processautomation-leave
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: process-automation-service
+    service-plan: standard
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true

@@ -118,6 +118,8 @@ entity LeaveRequests : managed, cuid {
       halfDayEnd    : Boolean default false;    // last day is half day
       requestNotes  : String(2000);
       status        : LeaveStatus default #Draft;
+      // ── Workflow ────────────────────────────────────────────────────────────
+      workflowInstanceId : String(100);  // SBPA workflow instance ID, set on submit
       // ── Submission ──────────────────────────────────────────────────────────
       submittedAt   : Timestamp;
       // ── Approval ────────────────────────────────────────────────────────────

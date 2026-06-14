@@ -14,6 +14,10 @@
     {
       "name": "$XSAPPNAME.HRAdmin",
       "description": "HR Admin: full access, balance allocation"
+    },
+    {
+      "name": "$XSAPPNAME.WorkflowCallback",
+      "description": "SBPA workflow callback: approve/reject leave from workflow engine"
     }
   ],
   "attributes": [],
@@ -32,6 +36,11 @@
       "name": "HRAdmin",
       "description": "HR administrator role",
       "scope-references": [ "$XSAPPNAME.HRAdmin" ]
+    },
+    {
+      "name": "WorkflowCallback",
+      "description": "SBPA workflow callback role",
+      "scope-references": [ "$XSAPPNAME.WorkflowCallback" ]
     }
   ],
   "role-collections": [
@@ -49,6 +58,11 @@
       "name": "HR_Admin",
       "description": "Assigned to HR administrators",
       "role-template-references": [ "$XSAPPNAME.HRAdmin" ]
+    },
+    {
+      "name": "SBPA_WorkflowCallback",
+      "description": "Assigned to the SBPA service instance principal for workflow callbacks",
+      "role-template-references": [ "$XSAPPNAME.WorkflowCallback" ]
     }
   ]
 }

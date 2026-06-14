@@ -12,3 +12,9 @@
   ├──────────┼───────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
   │ HR Admin │ alice.johnson │ …/emp_ui/webapp/index.html?sap-user=alice.johnson                                                                         │
   └──────────┴───────────────┴──────────────────────────────────────────────────────
+
+  https://developers.sap.com/tutorials/cp-starter-ibpm-employeeonboarding-2-configure..html
+
+  https://community.sap.com/t5/technology-blog-posts-by-members/setting-up-sap-business-rules-service-in-the-sap-btp-cloud-foundry/ba-p/13461521
+
+  

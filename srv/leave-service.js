@@ -1,5 +1,5 @@
-'use strict';
-
+  'use strict';
+// v2
 const cds = require('@sap/cds');
 
 const Status = {
@@ -142,6 +142,16 @@ module.exports = class LeaveService extends cds.ApplicationService {
       await _updatePending(LeaveBalances, request.employee_employeeId,
                            request.leaveType_code,
                            new Date(request.startDate).getFullYear(), days, '+');
+
+      // Trigger SBPA approval workflow. Request is already PENDING so a
+      // workflow failure is surfaced as a warning (not an error) — the status
+      // change stands and the manager can still approve via mgr_ui.
+      try {
+        await _triggerApprovalWorkflow(ID, request, days);
+      } catch (e) {
+        cds.log('workflow').warn(`SBPA trigger failed for ${ID}:`, e.message);
+        req.warn(503, `Leave request submitted, but workflow trigger failed: ${e.message}`);
+      }
 
       return SELECT.one.from(LeaveRequests).where({ ID });
     });
@@ -630,6 +640,75 @@ async function _logHistory(ApprovalHistory, entry) {
     ID: cds.utils.uuid(),
     ...entry,
   });
+}
+
+// Start an SBPA workflow instance for manager approval.
+// Reads manager/employee/leave-type details from the DB, calls the SBPA REST
+// API, and writes the returned instance ID back to the leave request.
+// Gracefully no-ops when the workflow service is not configured (dev/hybrid).
+async function _triggerApprovalWorkflow(leaveRequestId, request, days) {
+  const wf = await cds.connect.to('workflow');
+
+  const db = await cds.connect.to('db');
+  const year = new Date(request.startDate).getFullYear();
+  const [mgr, emp, lt, bal] = await Promise.all([
+    request.requestManager_employeeId
+      ? db.run(SELECT.one.from('sap.hr.Employees')
+          .columns('userId', 'fullName', 'email')
+          .where({ employeeId: request.requestManager_employeeId }))
+      : Promise.resolve(null),
+    db.run(SELECT.one.from('sap.hr.Employees')
+      .columns('fullName')
+      .where({ employeeId: request.employee_employeeId })),
+    db.run(SELECT.one.from('sap.hr.LeaveTypes')
+      .columns('name', 'isPaid')
+      .where({ code: request.leaveType_code })),
+    db.run(SELECT.one.from('sap.hr.LeaveBalances')
+      .columns('allocated', 'used', 'pending', 'remaining')
+      .where({ employee_employeeId: request.employee_employeeId,
+               leaveType_code: request.leaveType_code,
+               fiscalYear: year })),
+  ]);
+
+  const instancesPath = cds.env.requires?.workflow?.instancesPath
+    ?? '/public/workflow/rest/v1/workflow-instances';
+
+  const resp = await wf.send({
+    method: 'POST',
+    path:   instancesPath,
+    data: {
+     // definitionId: cds.env.requires?.workflow?.definitionId ?? 'leaveApproval',
+      definitionId:'com.demo.wf.leaveapproval',
+      context: {
+        leaveRequestId,
+        employeeName:     emp?.fullName        ?? '',
+        leaveType:        lt?.name             ?? request.leaveType_code,
+        isPaid:           lt?.isPaid ? 'Yes' : 'No',
+        startDate:        request.startDate,
+        endDate:          request.endDate,
+        numberOfDays:     days,
+        requestNotes:     request.requestNotes  ?? '',
+        managerUserId:    mgr?.userId          ?? '',
+        managerName:      mgr?.fullName        ?? '',
+        managerEmail:     mgr?.email               ?? '',
+        balanceAllocated: parseFloat(bal?.allocated  ?? 0),
+        balanceUsed:      parseFloat(bal?.used       ?? 0
+
+          
+        ),
+        balancePending:   parseFloat(bal?.pending    ?? 0),
+        balanceRemaining: parseFloat(bal?.remaining  ?? 0),
+      },
+    },
+  });
+
+  if (resp?.id) {
+    await db.run(
+      UPDATE('sap.hr.LeaveRequests')
+        .set({ workflowInstanceId: resp.id })
+        .where({ ID: leaveRequestId })
+    );
+  }
 }
 
 async function _assertIsManager(req, Employees, requestManagerEmployeeId) {

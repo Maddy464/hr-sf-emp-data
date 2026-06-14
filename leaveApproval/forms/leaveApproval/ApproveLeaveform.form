@@ -1,0 +1,128 @@
+{
+    "id": "approveleaveform",
+    "schemaVersion": "1.1.0",
+    "name": "ApproveLeaveform",
+    "revision": "1.0",
+    "type": "task",
+    "readOnly": false,
+    "content": [
+        {
+            "id": "section_employee",
+            "type": "section",
+            "title": "Employee Information",
+            "content": [
+                {
+                    "id": "employeeName",
+                    "type": "string",
+                    "label": "Employee",
+                    "readOnly": true
+                },
+                {
+                    "id": "managerName",
+                    "type": "string",
+                    "label": "Approving Manager",
+                    "readOnly": true
+                }
+            ]
+        },
+        {
+            "id": "section_leave",
+            "type": "section",
+            "title": "Leave Request Details",
+            "content": [
+                {
+                    "id": "leaveType",
+                    "type": "string",
+                    "label": "Leave Type",
+                    "readOnly": true
+                },
+                {
+                    "id": "startDate",
+                    "type": "string",
+                    "label": "Start Date",
+                    "readOnly": true
+                },
+                {
+                    "id": "endDate",
+                    "type": "string",
+                    "label": "End Date",
+                    "readOnly": true
+                },
+                {
+                    "id": "numberOfDays",
+                    "type": "number",
+                    "label": "Number of Days",
+                    "readOnly": true
+                },
+                {
+                    "id": "isPaid",
+                    "type": "string",
+                    "label": "Paid Leave",
+                    "readOnly": true
+                },
+                {
+                    "id": "requestNotes",
+                    "type": "string",
+                    "label": "Employee Notes",
+                    "readOnly": true
+                }
+            ]
+        },
+        {
+            "id": "section_balance",
+            "type": "section",
+            "title": "Leave Balance",
+            "content": [
+                {
+                    "id": "balanceAllocated",
+                    "type": "number",
+                    "label": "Allocated Days",
+                    "readOnly": true
+                },
+                {
+                    "id": "balanceUsed",
+                    "type": "number",
+                    "label": "Used Days",
+                    "readOnly": true
+                },
+                {
+                    "id": "balancePending",
+                    "type": "number",
+                    "label": "Pending Days",
+                    "readOnly": true
+                },
+                {
+                    "id": "balanceRemaining",
+                    "type": "number",
+                    "label": "Remaining Days",
+                    "readOnly": true
+                }
+            ]
+        },
+        {
+            "id": "section_decision",
+            "type": "section",
+            "title": "Manager Decision",
+            "content": [
+                {
+                    "id": "decisionNotes",
+                    "type": "string",
+                    "label": "Comments / Reason",
+                    "readOnly": false
+                }
+            ]
+        }
+    ],
+    "decisions": [
+        {
+            "id": "approve",
+            "text": "Approve",
+            "decisionType": "positive"
+        },
+        {
+            "id": "reject",
+            "text": "Reject",
+            "decisionType": "negative"
+        }
+    ]
+}

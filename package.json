@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "dependencies": {
     "@cap-js/hana": "^2",
+    "@sap-cloud-sdk/connectivity": "^4",
+    "@sap-cloud-sdk/http-client": "^4",
+    "@sap-cloud-sdk/resilience": "^4",
     "@sap/cds": "^9",
     "@sap/xssec": "^4"
   },
@@ -15,7 +18,7 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "watch:hybrid": "cds watch --profile hybrid",
+    "hybrid": "cds watch --profile hybrid",
     "watch-emp_ui": "cds watch --open com.sap.sf.empui/index.html?sap-ui-xx-viewCache=false --livereload false",
     "undeploy": "cf undeploy hr-sf-emp-data --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
@@ -89,7 +92,7 @@
                 "employeeId": "EMP006"
               }
             },
-            "mahesh.mob99@gmail.com": {
+            "mahesh.narkuda@gmail.com": {
               "password": "mahesh",
               "roles": [
                 "Employee"
@@ -97,12 +100,20 @@
               "attr": {
                 "employeeId": "EMP007"
               }
+            },
+            "sbpa-callback": {
+              "password": "callback",
+              "roles": [ "WorkflowCallback" ]
             }
           }
         }
       },
       "[hybrid]": {
         "db": { "kind": "hana" },
+        "workflow": {
+          "kind": "rest",
+          "credentials": { "destination": "workflow-new" }
+        },
         "auth": {
           "kind": "mocked",
           "users": {
@@ -112,12 +123,22 @@
             "david.brown":         { "password": "david",  "roles": ["Employee"] },
             "emma.davis":          { "password": "emma",   "roles": ["Employee"] },
             "frank.miller":        { "password": "frank",  "roles": ["Employee"] },
-            "mahesh.mob99@gmail.com": { "password": "mahesh", "roles": ["Employee"] }
+            "mahesh.narkuda@gmail.com": { "password": "mahesh", "roles": ["Employee"] },
+            "sbpa-callback":          { "password": "callback", "roles": ["WorkflowCallback"] }
           }
         }
       },
       "[production]": {
-        "auth": "xsuaa"
+        "auth": "xsuaa",
+        "workflow": {
+          "kind": "rest",
+          "credentials": { "destination": "workflow-new" }
+        }
+      },
+      "workflow": {
+        "kind": "rest",
+        "definitionId": "com.demo.wf.leaveapproval",
+        "instancesPath": "/public/workflow/rest/v1/workflow-instances"
       },
       "html5-repo": true
     }
