@@ -1,0 +1,42 @@
+{
+    "id": "newleaveform",
+    "schemaVersion": "1.1.0",
+    "name": "NewLeaveform",
+    "revision": "1.0",
+    "type": "task",
+    "readOnly": false,
+    "content": [
+        {
+            "id": "employee_name",
+            "type": "string",
+            "label": "Employee Name",
+            "readOnly": false,
+            "value": "${context.employeeName}",
+            "constraints": {
+                "required": false
+            }
+        },
+        {
+            "id": "leave_type",
+            "type": "string",
+            "label": "Leave Type",
+            "readOnly": false,
+            "value": "${context.leaveType}",
+            "constraints": {
+                "required": false
+            }
+        }
+    ],
+    "decisions": [
+        {
+            "id": "approve",
+            "text": "Approve",
+            "decisionType": "positive"
+        },
+        {
+            "id": "reject",
+            "text": "Reject",
+            "decisionType": ""
+        }
+    ]
+}

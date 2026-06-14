@@ -17,7 +17,7 @@
 // Approve: POST /odata/v4/workflow/approveLeave
 // Reject:  POST /odata/v4/workflow/rejectLeave
 
-service WorkflowCallbackService @(path: '/workflow', requires: 'WorkflowCallback') {
+service WorkflowCallbackService @(path: '/odata/v4/workflow', requires: 'authenticated-user') {
 
   // Called by SBPA when manager clicks Approve in My Inbox
   action approveLeave(

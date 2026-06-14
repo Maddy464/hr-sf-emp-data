@@ -10,7 +10,7 @@ npm start                        # cds-serve on http://localhost:4004
 
 # Watch mode (auto-restart on file changes)
 cds watch                        # development profile (SQLite)
-npm run watch:hybrid             # hybrid profile (HANA cloud + mocked auth)
+npm run hybrid                   # hybrid profile (HANA cloud + mocked auth)
 
 # Compile CDS only — fastest way to catch model errors
 npx cds compile srv/
@@ -23,7 +23,7 @@ npm run deploy
 **Hybrid mode setup (once per BAS session):**
 ```bash
 cds bind -2 hr-sf-emp-data-db   # writes .cdsrc-private.json with HANA credentials
-npm run watch:hybrid
+npm run hybrid
 ```
 
 **Test OData endpoints locally:**
@@ -53,6 +53,13 @@ curl -s -X POST "http://localhost:4004/odata/v4/manager/TeamRequests(<ID>)/rejec
 # Withdraw / cancel (employee)
 curl -s -X POST "$BASE/LeaveRequests(<ID>)/withdraw" \
   -u david.brown:david -H "Content-Type: application/json" -d '{"reason":"..."}'
+# SBPA workflow callbacks (simulates SBPA calling back after manager acts in My Inbox)
+curl -s -X POST "http://localhost:4004/odata/v4/workflow/approveLeave" \
+  -u sbpa-callback:callback -H "Content-Type: application/json" \
+  -d '{"leaveRequestId":"<UUID>","actionBy":"bob.smith","comments":"Approved"}'
+curl -s -X POST "http://localhost:4004/odata/v4/workflow/rejectLeave" \
+  -u sbpa-callback:callback -H "Content-Type: application/json" \
+  -d '{"leaveRequestId":"<UUID>","actionBy":"bob.smith","reason":"Insufficient notice"}'
 ```
 
 ## Architecture
@@ -67,30 +74,49 @@ srv/leave-service.js             → Handlers for LeaveService + HRAdminService
 srv/manager-service.cds          → ManagerService projections & actions
 srv/manager-service-auth.cds     → @restrict annotations for ManagerService
 srv/manager-service.js           → Handlers for ManagerService
+srv/workflow-service.cds         → WorkflowCallbackService — SBPA callback REST endpoint
+srv/workflow-service.js          → Handlers for approveLeave / rejectLeave callbacks
 server.js                        → Custom express bootstrap (BAS auth bypass middleware)
 app/emp_ui/annotations.cds       → Fiori Elements V4 UI annotations for emp_ui
 app/mgr_ui/annotations.cds       → Fiori Elements V4 UI annotations for mgr_ui
 app/services.cds                 → Re-exports both annotation files into the CDS model
+leaveApproval/                   → SBPA Build Process Automation artifacts (workflow, forms)
 ```
 
-### Three services
+### Four services
 
 | Service | Mount | Who uses it |
 |---------|-------|-------------|
 | `LeaveService` | `/odata/v4/leave` | Employees & Managers (draft-enabled `LeaveRequests`) |
 | `ManagerService` | `/odata/v4/manager` | Managers only — `TeamRequests` (not draft-enabled) |
 | `HRAdminService` | `/odata/v4/hradmin` | HR Admins only — raw projections + bulk actions |
+| `WorkflowCallbackService` | `/odata/v4/workflow` | SBPA only — `approveLeave` / `rejectLeave` actions |
 
 `ManagerService` is a separate service (not just an annotation). Its balance mutations bypass the service entity and use `cds.connect.to('db')` directly to avoid the `TeamLeaveBalances` WHERE restriction.
 
 `HRAdminService` handler is exported from `leave-service.js` as `module.exports.HRAdminService` and exposes two unbound actions: `allocateAnnualLeave` and `processCarryForward`.
 
+`WorkflowCallbackService` is called by SBPA when a manager acts in My Inbox. It writes directly to the DB entity (bypassing all service auth) so it can update any employee's record using the payload's `actionBy` rather than `$user`. Secured with the `WorkflowCallback` role — in production this role collection is assigned to the SBPA `process-automation-service` binding.
+
+### SBPA workflow integration
+
+The SBPA Leave Approval workflow is defined in `leaveApproval/` and deployed to SBPA via the `leaveApproval` MTA module (uses the `process-automation-service` binding `sap_processautomation-leave`).
+
+Flow:
+1. `LeaveService.submit` triggers an SBPA workflow instance via the `workflow` CDS service destination (`workflow-new` destination → `sap_processautomation-leave` service binding). Stores the returned `workflowInstanceId` on the leave request.
+2. SBPA creates a user task in the manager's SAP My Inbox / Task Center.
+3. Manager approves or rejects in My Inbox → SBPA calls `POST /odata/v4/workflow/approveLeave` or `rejectLeave` using client credentials.
+4. `WorkflowCallbackService` updates the leave request status and adjusts balances identically to `ManagerService`.
+
+In development the workflow trigger gracefully no-ops when the `workflow` CDS service is not configured (logs a warning). To test callbacks locally, use the `sbpa-callback` mock user.
+
 ### MTA deployment (CF)
 
-Three deployed modules from `gen/`:
+Key deployed modules:
 - `hr-sf-emp-data-srv` — Node.js CAP server (`gen/srv`)
 - `hr-sf-emp-data-db-deployer` — HANA HDI deployer (`gen/db`)
 - `hr-sf-emp-data-app-deployer` — HTML5 apps (`gen/app/comsapsfempui.zip`, `gen/app/comsapsfmgrui.zip`)
+- `leaveApproval` — deploys SBPA workflow artifacts to the `sap_processautomation-leave` service instance
 
 Run `npx cds build --production` (or `npm run build`) to regenerate all `gen/` artifacts before deploying.
 
@@ -164,6 +190,7 @@ Defined in `package.json` under `cds.requires.[development].auth.users` and dupl
 | david.brown | david | Employee | bob.smith |
 | emma.davis | emma | Employee | bob.smith |
 | frank.miller | frank | Employee | carol.white |
+| sbpa-callback | callback | WorkflowCallback | — (service account for SBPA callbacks) |
 
 Production auth uses XSUAA (`[production].auth: "xsuaa"`).
 

@@ -22,12 +22,15 @@ module.exports = class WorkflowCallbackService extends cds.ApplicationService {
       const request = await db.run(
         SELECT.one.from('sap.hr.LeaveRequests')
           .columns('ID', 'status', 'employee_employeeId', 'leaveType_code',
-                   'startDate', 'numberOfDays')
+                   'startDate', 'numberOfDays', 'workflowInstanceId')
           .where({ ID: leaveRequestId })
       );
 
       if (!request)
         return req.error(404, `Leave request ${leaveRequestId} not found`);
+      if (workflowInstanceId && request.workflowInstanceId &&
+          workflowInstanceId !== request.workflowInstanceId)
+        return req.error(403, 'Workflow instance ID mismatch');
       if (request.status !== Status.Pending)
         return req.error(400,
           `Only Pending requests can be approved (current: ${request.status})`);
@@ -74,12 +77,15 @@ module.exports = class WorkflowCallbackService extends cds.ApplicationService {
       const request = await db.run(
         SELECT.one.from('sap.hr.LeaveRequests')
           .columns('ID', 'status', 'employee_employeeId', 'leaveType_code',
-                   'startDate', 'numberOfDays')
+                   'startDate', 'numberOfDays', 'workflowInstanceId')
           .where({ ID: leaveRequestId })
       );
 
       if (!request)
         return req.error(404, `Leave request ${leaveRequestId} not found`);
+      if (workflowInstanceId && request.workflowInstanceId &&
+          workflowInstanceId !== request.workflowInstanceId)
+        return req.error(403, 'Workflow instance ID mismatch');
       if (request.status !== Status.Pending)
         return req.error(400,
           `Only Pending requests can be rejected (current: ${request.status})`);
