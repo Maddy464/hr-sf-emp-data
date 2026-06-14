@@ -17,4 +17,4 @@
 
   https://community.sap.com/t5/technology-blog-posts-by-members/setting-up-sap-business-rules-service-in-the-sap-btp-cloud-foundry/ba-p/13461521
 
-  
+ https://help.sap.com/docs/business-rules/business-rules-capability-for-cloud-foundry-environment/build-sap-fiori-application-to-author-business-rule 

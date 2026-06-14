@@ -683,6 +683,7 @@ async function _triggerApprovalWorkflow(leaveRequestId, request, days) {
         leaveRequestId,
         employeeName:     emp?.fullName        ?? '',
         leaveType:        lt?.name             ?? request.leaveType_code,
+        leaveTypeCode:    request.leaveType_code,
         isPaid:           lt?.isPaid ? 'Yes' : 'No',
         startDate:        request.startDate,
         endDate:          request.endDate,
